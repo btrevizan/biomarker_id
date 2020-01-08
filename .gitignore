@@ -102,3 +102,13 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+.Rproj.user
+.Rhistory
+
+# MacOS Junk
+.DS_Store
+
+# R
+.Rproj.user
+.Rhistory
+biomarker_id.Rproj

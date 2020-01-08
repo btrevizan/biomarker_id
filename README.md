@@ -1,2 +1,2 @@
-# biomarker_id
-Evaluation script for biomarker identification
+# Biomarker Identification through Feature Selection
+In development.

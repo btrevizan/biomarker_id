@@ -111,4 +111,5 @@ venv.bak/
 # R
 .Rproj.user
 .Rhistory
+.RData
 biomarker_id.Rproj

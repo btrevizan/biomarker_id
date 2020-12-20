@@ -1,0 +1,70 @@
+---
+title: "Resultados Finais"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+
+results <- readRDS("~/Documents/codelab.nosync/_biomarker_id/results/final_results.rds")
+recall1 <- results %>% filter(Recall == 1)
+```
+
+### F1 X Method
+```{r echo=FALSE}
+ggplot(recall1, aes(Method, F1)) + geom_boxplot() + ylim(c(0, 1))
+ggplot(recall1, aes(Method, Kappa)) + geom_boxplot() + ylim(c(0, 1))  # Kappa?
+```
+
+###  Stability X FS
+```{r echo=FALSE}
+ggplot(recall1, aes(FS, Stability, color=Threshold)) + geom_boxplot() # + scale_y_continuous(n.breaks = 10, limits = c(-1, 1))
+```
+
+### Ranking analysis
+```{r echo=FALSE}
+source("~/Documents/codelab.nosync/_biomarker_id/scripts/utils/parameters.R")
+rankings <- list()
+
+for(aggrName in names(aggrAlgorithm)) {
+
+  rankings[[aggrName]] <- list()
+  
+  for(fsName in names(fsAlgorithm)) {
+    
+    rankings[[aggrName]][[fsName]] <- list()
+    
+    for(bag in nBags) {
+      rankings[[aggrName]][[fsName]][[as.character(bag)]] <- list()
+    }
+  }
+  
+  for(fsName in names(fsAlgorithm)) {
+    
+    for(bag in nBags) {
+      bagName <- as.character(bag)
+      i <- 1
+      
+      for(filepath in datasets) {
+        filenameParts <- strsplit(filepath, "/")[[1]]
+        filenameWithExtension <- tail(filenameParts, n = 1)
+        filenameWithExtensionParts <- strsplit(filenameWithExtension, "\\.")[[1]]
+        filename <- filenameWithExtensionParts[1]
+        
+        remove(filenameParts, filenameWithExtension, filenameWithExtensionParts)
+        
+        # Data path
+        dataPath <- paste("~/Documents/codelab.nosync/_biomarker_id/results/training/", filename, "/", sep = "")
+        aggrFile <- paste(dataPath, "final_rankings/", aggrName, ".rds", sep = "")
+        
+        aggrMethodResults <- readRDS(aggrFile)
+        rankings[[aggrName]][[fsName]][[bagName]][[i]] <- aggrMethodResults[[fsName]][[bagName]]
+        i <- i + 1
+      }
+    }
+  }
+}
+
+```

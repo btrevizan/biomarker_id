@@ -1,0 +1,87 @@
+---
+title: "Análise da variância dos genes"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source('../scripts/utils/metrics.R')
+source('../scripts/utils/train.R')
+
+datasets <- c('GSE10797_common', 'GSE38959_common', 'GSE45827_common', 'GSE53752_common', 'GSE57297_common', 'GSE62944_common', 'GSE70947_common', 'GSE71053_common', 'GSE7904_common')
+
+project_path <- "~/Documents/codelab.nosync/biomarker_id/"
+results_path <- paste(project_path, "results/training/", sep = "")
+data_path <- paste(project_path, "data/processed/train/", sep = "")
+```
+
+## Alta e baixa variância
+Para cada dataset, selecionamos os 5 genes com maior e menor variância, independente da classe. Treinamos um modelo SVM radial com os genes selecionados pela variância. Abaixo, apresentamos os resultados. Nota-se que não há muito diferença entre as performances. Em alguns casos, os genes com maior e menor variância possuem o mesmo desempenho. Vale notar que não utilizamos SMOTE nos treinamentos. Essa análise foi inconclusiva.
+
+```{r echo=FALSE}
+results <- data.frame(row.names = c("dataset", "f1", "variance"))
+i <- 1
+
+for(dt in datasets) {
+  load(paste(data_path, dt, ".rda", sep = ""))
+  
+  variances <- list()
+  for(gene in colnames(x)) {
+    variances[[gene]] <- var(x[[gene]])
+  }
+  
+  variances <- data.frame(t(data.frame(variances, row.names = c("variance"))))
+  variances <- cbind(variances, list("gene" = rownames(variances)))
+  
+  highest_vars <- variances[order(variances$variance, decreasing = TRUE), ]
+  highest_vars <- highest_vars[1:5, ]
+  
+  lowest_vars <- variances[order(variances$variance), ]
+  lowest_vars <- lowest_vars[1:5, ]
+  
+  trainI <- readRDS(paste(results_path, dt, "/trainI.rds", sep = ""))
+  validationI <- setdiff(1:nrow(x), trainI)
+    
+  validationX <- x[validationI, ]
+  validationY <- y[validationI]
+  
+  features <- highest_vars$gene
+  hv_model <- trainModel(validationX[, features], validationY, getLOOCV(), "svmRadial")
+  
+  bestTune <- hv_model[["bestTune"]]
+  pred <- hv_model[["pred"]]
+  for(param in colnames(bestTune)) {
+    value <- bestTune[[param]]
+    pred <- pred[pred[[param]] == value, ]
+  }
+  
+  hv_metrics <- allMetrics(as.factor(pred$obs), as.factor(pred$pred))
+  
+  features <- lowest_vars$gene
+  lv_model <- trainModel(validationX[, features], validationY, getLOOCV(), "svmRadial")
+  
+  bestTune <- lv_model[["bestTune"]]
+  pred <- lv_model[["pred"]]
+  for(param in colnames(bestTune)) {
+    value <- bestTune[[param]]
+    pred <- pred[pred[[param]] == value, ]
+  }
+  
+  lv_metrics <- allMetrics(as.factor(pred$obs), as.factor(pred$pred))
+  
+  results[[i]] <- list(dataset = dt, f1 = as.numeric(hv_metrics[["F1"]]), variance = "Highest")
+  results[[i + 1]] <- list(dataset = dt, f1 = as.numeric(lv_metrics[["F1"]]), variance = "Lowest")
+  
+  i <- i + 2
+}
+
+results <- data.frame(t(results))
+results$f1 <- as.numeric(unlist(results$f1))
+results$dataset <- as.factor(unlist(results$dataset))
+results$variance <- as.factor(unlist(results$variance))
+
+ggplot(results, aes(x = dataset, y = f1, color = variance)) + geom_point() + theme(axis.text.x = element_text(angle = 90))
+```
+

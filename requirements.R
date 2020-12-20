@@ -1,7 +1,12 @@
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install(version = "3.10")
-
 install.packages("RobustRankAggreg")
 install.packages("mRMRe")
+install.packages("FSelector")
+install.packages("DMwR")
+install.packages("CORElearn")
+install.packages("e1071")
+install.packages("smotefamily")
+install.packages("caret")
+install.packages("FSelectorRcpp")
+install.packages("mlr3")
+install.packages("mlr3filters")
+install.packages("praznik")

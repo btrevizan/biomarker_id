@@ -1,4 +1,4 @@
-setwd('/Users/btrevizan/Documents/codelab.nosync/biomarker_id')
+setwd('~/biomarker_id/')
 
 source('scripts/utils/ranking_aggregation.R')
 source('scripts/utils/feature_selection.R')
@@ -8,10 +8,17 @@ source('scripts/utils/dataset.R')
 source('scripts/utils/train.R')
 source('scripts/utils/utils.R')
 
-results_path <- 'results/training/results.rds'
-results <- readRDS(results_path)
+args <- commandArgs(trailingOnly = TRUE)
+i <- as.numeric(args[1])
 
-for(datapath in datasets) {
+datapath <- datasets[i]
+filename <- utils.filename(datapath)
+
+results_path <- paste('results/training/results_', filename, '.rds', sep = '')
+# results <- readRDS(results_path)
+results <- data.frame()
+
+# for(datapath in datasets) {
   filename <- utils.filename(datapath)
   
   print("Build dataset.")
@@ -21,10 +28,12 @@ for(datapath in datasets) {
     for(m in methods) {
       for(b in n_bags_vec) {
         for(a in names(aggrs)) {
-          aggr <- list(a = aggrs[[a]])
+          aggr <- list()
+          aggr[[a]] <- aggrs[[a]]
           
           for(f in names(fses)) {
-            fs <- list(f = fses[[f]])
+            fs <- list()
+            fs[[f]] <- fses[[f]]
             
             print("Evaluate ensemble.")
             print(paste('Dataset = ', filename))
@@ -48,4 +57,4 @@ for(datapath in datasets) {
       }
     }
   }
-}
+# }

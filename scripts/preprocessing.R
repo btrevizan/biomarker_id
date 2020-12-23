@@ -1,3 +1,5 @@
+library(biomaRt)
+
 clearGeneSymbol <- function(geneSymbol) {
   geneSymbol <- gsub("-", ".", geneSymbol)
   geneSymbol <- gsub("@", ".", geneSymbol)
@@ -20,7 +22,12 @@ print("Getting all common genes...")
 commonGenes <- c()
 for(filepath in filepaths) {
   load(filepath)
-  geneSymbol <- clearGeneSymbol(geneSymbol)
+  # geneSymbol <- clearGeneSymbol(geneSymbol)
+  
+  mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+  mapping <- getBM(attributes = c('ensembl_gene_id', 'ensembl_transcript_id', 'external_gene_name', 'external_gene_source', 'hgnc_symbol', 'entrezgene_id'),
+                   values = geneSymbol, 
+                   mart = mart)
   
   if(is_null(commonGenes)) {
     commonGenes <- as.vector(geneSymbol)

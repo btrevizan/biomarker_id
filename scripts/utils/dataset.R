@@ -2,12 +2,9 @@ library(smotefamily)
 
 dataset.load <- function(filepath) {
   print(paste("Load", filepath))
-  load(filepath) 
+  load(filepath)
   
-  # SMOTE
-  print("Run SMOTE.")
-  
-  data <- dataset.smote(x, y)
+  data <- list('x' = x, 'y' = as.factor(y))
   return(data)
 }
 

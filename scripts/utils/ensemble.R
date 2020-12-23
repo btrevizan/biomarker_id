@@ -1,4 +1,5 @@
 source("scripts/utils/metrics.R")
+source("scripts/utils/dataset.R")
 source("scripts/utils/train.R")
 
 ensemble.eval <- function(x, y, n_bags, fs, aggr, threshold, method, train_perc = 0.7, tr_control = get_repeated_cv()) {
@@ -18,8 +19,9 @@ ensemble.eval <- function(x, y, n_bags, fs, aggr, threshold, method, train_perc 
   validation_i <- setdiff(1:nrow(x), train_i)
   
   #### 70% for training
-  train_x <- x[train_i, ]
-  train_y <- y[train_i]
+  train_data <- dataset.smote(x[train_i, ], y[train_i])
+  train_x <- train_data$x
+  train_y <- train_data$y
   
   ###### Create bag
   bags <- createResample(train_y, times = n_bags)

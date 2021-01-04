@@ -8,8 +8,8 @@ dataset.load <- function(filepath) {
   return(data)
 }
 
-dataset.smote <- function(x, y) {
-  data <- SMOTE(x, y, K = 3)[["data"]]
+dataset.smote <- function(x, y, k = 5) {
+  data <- smotefamily::SMOTE(x, y, K = k)[["data"]]
   x <- data[, names(data) != "class"]
   y <- as.factor(data[, "class"])
   

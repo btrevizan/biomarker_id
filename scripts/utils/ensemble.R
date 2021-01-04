@@ -2,7 +2,7 @@ source("scripts/utils/metrics.R")
 source("scripts/utils/dataset.R")
 source("scripts/utils/train.R")
 
-ensemble.eval <- function(x, y, n_bags, fs, aggr, threshold, method, train_perc = 0.7, tr_control = get_repeated_cv()) {
+ensemble.eval <- function(x, y, n_bags, fs, aggr, threshold, method, train_perc = 0.6, tr_control = get_repeated_cv()) {
   classes <- summary(y)
   
   fs_name <- names(fs)[1]
@@ -19,22 +19,32 @@ ensemble.eval <- function(x, y, n_bags, fs, aggr, threshold, method, train_perc 
   validation_i <- setdiff(1:nrow(x), train_i)
   
   #### 70% for training
-  train_data <- dataset.smote(x[train_i, ], y[train_i])
-  train_x <- train_data$x
-  train_y <- train_data$y
-  
-  ###### Create bag
-  bags <- createResample(train_y, times = n_bags)
+  train_x <- x[train_i, ]
+  train_y <- y[train_i]
   
   ##### For each bag
   i <- 1
   rankings <- list()
   
-  for(bag in bags) {
+  for(bag in 1:n_bags) {
     print(paste("Run bag #", i, " of ", n_bags, " bags.", sep = ""))
     
-    bag_x <- train_x[bag, ]
-    bag_y <- train_y[bag]
+    # Resample bag with at least 3 normal observations
+    n_normal <- 0
+    n_tumor <- 0
+    
+    while((n_normal < 3) | (n_tumor < 3)) {
+      indices <- createResample(train_y, times = 1, list = TRUE)[[1]]
+      bag_y <- train_y[indices]
+      
+      n_normal <- length(bag_y[bag_y == 'Normal'])
+      n_tumor <- length(bag_y[bag_y == 'Tumor'])
+    }
+    
+    # Apply SMOTE over bag
+    bag <- dataset.smote(train_x[indices, ], bag_y, 2)
+    bag_x <- bag$x
+    bag_y <- bag$y
     
     ###### Run feature selection
     ranking <- fs(bag_x, bag_y)

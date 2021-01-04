@@ -1,5 +1,7 @@
 setwd('~/biomarker_id/')
 
+library(dplyr)
+
 source('scripts/utils/ranking_aggregation.R')
 source('scripts/utils/feature_selection.R')
 source('scripts/utils/parameters.R')
@@ -15,8 +17,10 @@ datapath <- datasets[i]
 filename <- utils.filename(datapath)
 
 results_path <- paste('results/training/results_', filename, '.rds', sep = '')
-# results <- readRDS(results_path)
+
 results <- data.frame()
+if(file.exists(results_path))
+  results <- readRDS(results_path)
 
 # for(datapath in datasets) {
   filename <- utils.filename(datapath)
@@ -32,10 +36,13 @@ results <- data.frame()
           aggr[[a]] <- aggrs[[a]]
           
           for(f in names(fses)) {
+            result <- results %>% filter(Threshold == t, Classifier == m, Number.of.bags == b, Aggregation.method == a, Feature.selector == f)
+            if(nrow(result) > 0) next;
+            
             fs <- list()
             fs[[f]] <- fses[[f]]
             
-            print("Evaluate ensemble.")
+            print("============================= Evaluate ensemble =============================")
             print(paste('Dataset = ', filename))
             print(paste('Threshold = ', t))
             print(paste('Method = ', m))

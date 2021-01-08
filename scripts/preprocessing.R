@@ -1,12 +1,17 @@
 library(biomaRt)
+library(dplyr)
 
 clearGeneSymbol <- function(geneSymbol) {
-  geneSymbol <- gsub("-", ".", geneSymbol)
-  geneSymbol <- gsub("@", ".", geneSymbol)
-  geneSymbol <- gsub("_", ".", geneSymbol)
-  geneSymbol <- gsub("/", ".", geneSymbol)
+  mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+  mapping <- getBM(attributes = c('hgnc_symbol', 'entrezgene_id'), values = geneSymbol, mart = mart)
   
-  return(geneSymbol)
+  geneSymbol.mappedIdx <- match(geneSymbol,mapping$hgnc_symbol)  ## retorna índice (linha) em que o genesymbol foi encontrado
+  geneSymbol.mappedEntrez <- mapping[geneSymbol.mappedIdx, ]  ## retorna o entrezID equivalente (e NA se o geneSymbol não foi encontrado)
+  
+  not.na <- which(!is.na(geneSymbol.mappedEntrez$entrezgene_id))
+  genes <- geneSymbol.mappedEntrez[not.na, ]
+  
+  return(genes)
 }
 
 trainFilepaths <- Sys.glob("data/processed/train/*.rda")
@@ -19,30 +24,35 @@ filepaths <- c(notProcessedTrainFilepaths, notProcessedTestFilepaths)
 
 print("Getting all common genes...")
 
-commonGenes <- c()
+commonGenes <- NULL
 for(filepath in filepaths) {
+  print(filepath)
   load(filepath)
-  # geneSymbol <- clearGeneSymbol(geneSymbol)
+  geneSymbol <- clearGeneSymbol(geneSymbol)
   
-  mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
-  mapping <- getBM(attributes = c('ensembl_gene_id', 'ensembl_transcript_id', 'external_gene_name', 'external_gene_source', 'hgnc_symbol', 'entrezgene_id'),
-                   values = geneSymbol, 
-                   mart = mart)
-  
-  if(is_null(commonGenes)) {
-    commonGenes <- as.vector(geneSymbol)
+  if(is.null(commonGenes)) {
+    commonGenes <- geneSymbol
   } else {
-    commonGenes <- as.vector(intersect(commonGenes, geneSymbol))
+    common <- commonGenes %>% semi_join(geneSymbol, by = 'entrezgene_id')
+    commonGenes <- common
   }
+}
+
+mapping <- list()
+for(i in 1:dim(commonGenes)[1]) {
+  mapping[[commonGenes$hgnc_symbol[i]]] <- as.character(commonGenes$entrezgene_id[i])
 }
 
 print("Saving datasets only with common genes...")
 
 for(filepath in filepaths) {
   load(filepath)
-  names(x) <- clearGeneSymbol(names(x))
   
-  x <- x[, commonGenes]
+  x <- x[, commonGenes$hgnc_symbol]
+  for(i in 1:length(colnames(x))) {
+    colnames(x)[i] <- paste('gene_', mapping[[colnames(x)[i]]], sep = "")
+  }
+  
   y <- as.factor(t(y))
   
   print(paste(filepath, dim(x)[1], dim(x)[2]))
@@ -52,3 +62,4 @@ for(filepath in filepaths) {
 }
 
 print("Done.")
+

@@ -77,7 +77,7 @@ set_data <- function(x, y) {
   orderedX <- x[yOrder, ]
   orderedY <- y[yOrder]
   
-  df <- data.frame(orderedX, orderedY)
+  df <- cbind(orderedX, orderedY)
   
   return(df)
 }

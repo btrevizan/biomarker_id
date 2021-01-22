@@ -33,7 +33,7 @@ ensemble.eval <- function(x, y, n_bags, fs, aggr, threshold, method, train_perc 
     n_normal <- 0
     n_tumor <- 0
     
-    while((n_normal < 3) | (n_tumor < 3)) {
+    while((n_normal < 4) | (n_tumor < 4)) {
       indices <- createResample(train_y, times = 1, list = TRUE)[[1]]
       bag_y <- train_y[indices]
       
@@ -42,7 +42,7 @@ ensemble.eval <- function(x, y, n_bags, fs, aggr, threshold, method, train_perc 
     }
     
     # Apply SMOTE over bag
-    bag <- dataset.smote(train_x[indices, ], bag_y, 2)
+    bag <- dataset.smote(train_x[indices, ], bag_y, 3)
     bag_x <- bag$x
     bag_y <- bag$y
     

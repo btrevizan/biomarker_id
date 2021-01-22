@@ -2,7 +2,7 @@ library(tidyverse)
 library(caret)
 
 source('scripts/utils/dataset.R')
-train.smote <- list(name = "my_smote", func = function(x, y) { return(dataset.smote(x, y, 1)) }, first = TRUE)
+train.smote <- list(name = "my_smote", func = function(x, y) { return(dataset.smote(x, y, 3)) }, first = TRUE)
 
 five_stats <- function (...) {
   # More metrics
@@ -11,19 +11,19 @@ five_stats <- function (...) {
 
 get_LOOCV <- function() {
   # Train control using "leave-one-out cross-validation"
-  ctrl <- trainControl(method = "LOOCV") # , sampling = train.smote) #, summaryFunction = five_stats)
+  ctrl <- trainControl(method = "LOOCV", sampling = train.smote) #, summaryFunction = five_stats)
   return(ctrl)
 }
 
 get_repeated_cv <- function(k = 10, repeats = 10) {
   # Train control using "repeated cross-validation"
-  ctrl <- trainControl(method = "repeatedcv", number = k, repeats = repeats, savePredictions = "all") #, sampling = train.smote) #, summaryFunction = five_stats)
+  ctrl <- trainControl(method = "repeatedcv", number = k, repeats = repeats, savePredictions = "all", sampling = train.smote) #, summaryFunction = five_stats)
   return(ctrl)
 }
 
-get_cv <- function(k = 10) {
-  # Train control using "repeated cross-validation"
-  ctrl <- trainControl(method = "cv", number = k, savePredictions = "all") # , sampling = train.smote) #, summaryFunction = five_stats)
+get_cv <- function(y, k = 10) {
+  # Train control using "cross-validation"
+  ctrl <- trainControl(method = "cv", number = k, savePredictions = "all", sampling = train.smote) #, summaryFunction = five_stats)
   return(ctrl)
 }
 

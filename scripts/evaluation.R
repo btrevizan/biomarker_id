@@ -52,7 +52,7 @@ if(file.exists(results_path))
             
             r <- ensemble.eval(data$x, data$y, b, fs, aggr, t, m, train_perc, tr_control)
             r <- cbind(r$results, list('Dataset' = filename))
-            
+       
             results <- rbind(results, r)
             
             print(paste('Mean Recall =', r$Recall.Mean))

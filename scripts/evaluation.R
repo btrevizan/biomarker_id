@@ -60,8 +60,10 @@ if(file.exists(results_path))
           
           for(m in methods) {
             
-            result <- results %>% filter(Threshold == t, Classifier == m, Number.of.bags == b, Aggregation.method == a, Feature.selector == f)
-            if(nrow(result) > 0) next;
+            if(nrow(results) > 0){
+              result <- results %>% filter(Threshold == t, Classifier == m, Number.of.bags == b, Aggregation.method == a, Feature.selector == f)
+              if(nrow(result) > 0) next;
+            }
             
             print(paste('Dataset = ', filename))
             print(paste('Threshold = ', t))

@@ -1,4 +1,5 @@
 setwd('~/biomarker_id/')
+options(java.parameters = "-Xmx16000m")
 
 library(dplyr)
 
@@ -12,18 +13,14 @@ source('scripts/utils/utils.R')
 
 args <- commandArgs(trailingOnly = TRUE)
 i <- as.numeric(args[1])
-
 datapath <- datasets[i]
-filename <- utils.filename(datapath)
-
-results_path <- paste('results/training/results_', filename, '.rds', sep = '')
-
-results <- data.frame()
-if(file.exists(results_path))
-  results <- readRDS(results_path)
 
 # for(datapath in datasets) {
   filename <- utils.filename(datapath)
+  
+  results_path <- paste('results/training/results_', filename, '.rds', sep = '')
+  
+  results <- data.frame()
   
   print("Build dataset.")
   data <- dataset.load(datapath)
@@ -40,6 +37,7 @@ if(file.exists(results_path))
   
   for(b in n_bags_vec) {
     
+    print(paste("Create", b, "bags.", sep = " "))
     bags <- ensemble.create_bags(train_x, train_y, b)
     
     for(a in names(aggrs)) {
@@ -54,16 +52,10 @@ if(file.exists(results_path))
         
         print("============================= Evaluate ensemble =============================")
         fs_result <- ensemble.feature_selection(fs, aggr, bags)
-      
         
         for(t in thresholds) {
           
           for(m in methods) {
-            
-            if(nrow(results) > 0){
-              result <- results %>% filter(Threshold == t, Classifier == m, Number.of.bags == b, Aggregation.method == a, Feature.selector == f)
-              if(nrow(result) > 0) next;
-            }
             
             print(paste('Dataset = ', filename))
             print(paste('Threshold = ', t))

@@ -19,7 +19,6 @@ datapath <- datasets[i]
   filename <- utils.filename(datapath)
   
   results_path <- paste('results/training/results_', filename, '.rds', sep = '')
-  
   results <- data.frame()
   
   print("Build dataset.")

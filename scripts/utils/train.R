@@ -21,7 +21,7 @@ get_repeated_cv <- function(k = 10, repeats = 10) {
   return(ctrl)
 }
 
-get_cv <- function(y, k = 10) {
+get_cv <- function(k = 10) {
   # Train control using "cross-validation"
   ctrl <- trainControl(method = "cv", number = k, savePredictions = "all", sampling = train.smote) #, summaryFunction = five_stats)
   return(ctrl)

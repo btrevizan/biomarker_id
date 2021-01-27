@@ -47,7 +47,9 @@ ensemble.eval <- function(validation_x, validation_y, rankings, final_ranking, t
   
   #### Finish ####
   print("Done.")
-  return(results)
+  
+  res <- list('results' = results, 'model' = model)
+  return(res)
 }
 
 ensemble.create_bags <- function(x, y, n_bags) {

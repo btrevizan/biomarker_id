@@ -59,9 +59,10 @@ all_metrics <- function(y_true, y_pred) {
     'Accuracy' = confMatrix[['overall']][['Accuracy']],
     'Kappa' = confMatrix[['overall']][['Kappa']],
     'Recall' = confMatrix[['byClass']][['Recall']],
-    'Precision' = confMatrix[['byClass']][['Precision']],
-    'F1-Score' = confMatrix[['byClass']][['F1']]
+    'Precision' = confMatrix[['byClass']][['Precision']]
   )
+  
+  results[['F1-Score']] <- (2 * results$Recall * results$Precision) / (results$Recall + results$Precision)
   
   return(results)
 }

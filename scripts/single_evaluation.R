@@ -79,6 +79,9 @@ datapath <- datasets[i]
           
           for(m in methods) {
             
+            model_path <- file.path(results_dir, paste('model_', m, '_t_', t, '_fs_', f, '_bags_', b, '_a_', a, '.rds', sep = ''))
+            if(file.exists(model_path)) next;
+            
             print(paste('Dataset = ', filename))
             print(paste('Threshold = ', t))
             print(paste('Method = ', m))
@@ -86,8 +89,9 @@ datapath <- datasets[i]
             print(paste('Aggregation = ', a))
             print(paste('Feature Selection = ', f))
             
-            r <- ensemble.eval(validation_x, validation_y, fs_result$rankings, fs_result$final_ranking, t, m, tr_control)
+            res <- ensemble.eval(validation_x, validation_y, fs_result$rankings, fs_result$final_ranking, t, m, tr_control)
             
+            r <- res$results
             r[['Number of bags']] <- c(r[['Number of bags']], b)
             r[['Feature selector']] <- c(r[['Feature selector']], f)
             r[['Aggregation method']] <- c(r[['Aggregation method']], a)
@@ -108,6 +112,7 @@ datapath <- datasets[i]
             print(paste('Std Recall =', r$Recall.Std))
             
             saveRDS(results, results_path)
+            saveRDS(res$model, model_path)
           }
         }
       }

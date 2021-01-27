@@ -18,13 +18,22 @@ datapath <- datasets[i]
 # for(datapath in datasets) {
   filename <- utils.filename(datapath)
   
-  results_path <- paste('results/training/results_', filename, '.rds', sep = '')
+  results_dir <- file.path('results/training', filename)
+  results_path <- file.path(results_dir, 'performance.rds')
+  partitions_path <- file.path(results_dir, 'partitions.rds')
+  
+  dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
   results <- data.frame()
   
   print("Build dataset.")
   data <- dataset.load(datapath)
   
-  partitions <- ensemble.data_partition(data$x, data$y, train_perc)
+  if(file.exists(partitions_path)) {
+    partitions <- readRDS(partitions_path)
+   } else {
+    partitions <- ensemble.data_partition(data$x, data$y, train_perc)
+    saveRDS(partitions, partitions_path)
+   }
   
   train_i <- partitions[["train"]]
   train_x <- data$x[train_i, ]
@@ -37,7 +46,14 @@ datapath <- datasets[i]
   for(b in n_bags_vec) {
     
     print(paste("Create", b, "bags.", sep = " "))
-    bags <- ensemble.create_bags(train_x, train_y, b)
+    
+    bags_path <- file.path(results_dir, paste('bags_', b, '.rds', sep = ''))
+    if(file.exists(bags_path)) {
+      bags <- readRDS(bags_path)
+    } else {
+      bags <- ensemble.create_bags(train_x, train_y, b)
+      saveRDS(bags, bags_path)
+    }
     
     for(a in names(aggrs)) {
       
@@ -50,7 +66,14 @@ datapath <- datasets[i]
         fs[[f]] <- fses[[f]]
         
         print("============================= Evaluate ensemble =============================")
-        fs_result <- ensemble.feature_selection(fs, aggr, bags)
+        
+        fs_path <- file.path(results_dir, paste('fs_', f, '_bags_', b, '_a_', a, '.rds', sep = ''))
+        if(file.exists(fs_path)) {
+          fs_result <- readRDS(fs_path)
+        } else {
+          fs_result <- ensemble.feature_selection(fs, aggr, bags)
+          saveRDS(fs_result, fs_path)
+        }
         
         for(t in thresholds) {
           

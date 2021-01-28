@@ -1,4 +1,5 @@
 library(smotefamily)
+library(caret)
 
 dataset.load <- function(filepath) {
   print(paste("Load", filepath))
@@ -28,5 +29,10 @@ dataset.smote <- function(x, y, k = 5) {
   y <- as.factor(data[, "class"])
   
   data <- list('x' = x, 'y' = y)
+  return(data)
+}
+
+dataset.down_sample <- function(x, y) {
+  data <- caret::downSample(x, y, list=TRUE)
   return(data)
 }

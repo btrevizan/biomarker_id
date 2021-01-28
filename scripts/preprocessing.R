@@ -38,6 +38,8 @@ for(filepath in filepaths) {
   }
 }
 
+commonGenes <- commonGenes[!duplicated(commonGenes$entrezgene_id), ]
+
 mapping <- list()
 for(i in 1:dim(commonGenes)[1]) {
   mapping[[commonGenes$hgnc_symbol[i]]] <- as.character(commonGenes$entrezgene_id[i])

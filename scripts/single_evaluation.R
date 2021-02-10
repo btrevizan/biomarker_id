@@ -45,12 +45,11 @@ datapath <- datasets[i]
   
   for(b in n_bags_vec) {
     
-    print(paste("Create", b, "bags.", sep = " "))
-    
     bags_path <- file.path(results_dir, paste('bags_', b, '.rds', sep = ''))
     if(file.exists(bags_path)) {
       bags <- readRDS(bags_path)
     } else {
+      print(paste("Create", b, "bags.", sep = " "))
       bags <- ensemble.create_bags(train_x, train_y, b)
       saveRDS(bags, bags_path)
     }
@@ -64,8 +63,6 @@ datapath <- datasets[i]
       
         fs <- list()
         fs[[f]] <- fses[[f]]
-        
-        print("============================= Evaluate ensemble =============================")
         
         fs_path <- file.path(results_dir, paste('fs_', f, '_bags_', b, '_a_', a, '.rds', sep = ''))
         if(file.exists(fs_path)) {
@@ -82,6 +79,7 @@ datapath <- datasets[i]
             model_path <- file.path(results_dir, paste('model_', m, '_t_', t, '_fs_', f, '_bags_', b, '_a_', a, '.rds', sep = ''))
             if(file.exists(model_path)) next;
             
+            print("============================= Evaluate ensemble =============================")
             print(paste('Dataset = ', filename))
             print(paste('Threshold = ', t))
             print(paste('Method = ', m))

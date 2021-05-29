@@ -5,3 +5,7 @@ utils.filename <- function(filepath) {
   filename <- filenameWithExtensionParts[1] 
   return(filename)
 }
+
+utils.save_plot <- function(path, plot) {
+  ggsave(path, plot, width = 8, height = 5, dpi = 320, units = "in");
+}

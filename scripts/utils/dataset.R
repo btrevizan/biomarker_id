@@ -4,7 +4,7 @@ library(caret)
 dataset.load <- function(filepath) {
   print(paste("Load", filepath))
   load(filepath)
-  
+
   data <- list('x' = x, 'y' = as.factor(y))
   return(data)
 }

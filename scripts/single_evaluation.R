@@ -15,10 +15,10 @@ args <- commandArgs(trailingOnly = TRUE)
 i <- as.numeric(args[1])
 datapath <- datasets[i]
 
-# for(datapath in datasets) {
+for(datapath in datasets) {
   filename <- utils.filename(datapath)
   
-  results_dir <- file.path('results/training', filename)
+  results_dir <- file.path('results/training/Down Sampling', filename)
   results_path <- file.path(results_dir, 'performance.rds')
   partitions_path <- file.path(results_dir, 'partitions.rds')
   
@@ -30,10 +30,10 @@ datapath <- datasets[i]
   
   if(file.exists(partitions_path)) {
     partitions <- readRDS(partitions_path)
-   } else {
+  } else {
     partitions <- ensemble.data_partition(data$x, data$y, train_perc)
     saveRDS(partitions, partitions_path)
-   }
+  }
   
   train_i <- partitions[["train"]]
   train_x <- data$x[train_i, ]
@@ -75,10 +75,10 @@ datapath <- datasets[i]
         for(t in thresholds) {
           
           for(m in methods) {
-            
+
             model_path <- file.path(results_dir, paste('model_', m, '_t_', t, '_fs_', f, '_bags_', b, '_a_', a, '.rds', sep = ''))
             if(file.exists(model_path)) next;
-            
+
             print("============================= Evaluate ensemble =============================")
             print(paste('Dataset = ', filename))
             print(paste('Threshold = ', t))
@@ -86,14 +86,14 @@ datapath <- datasets[i]
             print(paste('# bags = ', b))
             print(paste('Aggregation = ', a))
             print(paste('Feature Selection = ', f))
-            
+
             res <- ensemble.eval(validation_x, validation_y, fs_result$rankings, fs_result$final_ranking, t, m, tr_control)
-            
+
             r <- res$results
             r[['Number of bags']] <- c(r[['Number of bags']], b)
             r[['Feature selector']] <- c(r[['Feature selector']], f)
             r[['Aggregation method']] <- c(r[['Aggregation method']], a)
-            
+
             r <- data.frame(r)
             r$Number.of.bags <- as.factor(r$Number.of.bags)
             r$Feature.selector <- as.factor(r$Feature.selector)
@@ -102,13 +102,13 @@ datapath <- datasets[i]
             r$Classifier <- as.factor(r$Classifier)
             r$K.Fold <- as.factor(r$K.Fold)
             r$Evaluation.method <- as.factor(r$Evaluation.method)
-            
+
             r <- cbind(r, list('Dataset' = filename))
             results <- rbind(results, r)
-            
+
             print(paste('Mean Recall =', r$Recall.Mean))
             print(paste('Std Recall =', r$Recall.Std))
-            
+
             saveRDS(results, results_path)
             saveRDS(res$model, model_path)
           }
@@ -116,4 +116,4 @@ datapath <- datasets[i]
       }
     }
   }
-# }
+}
